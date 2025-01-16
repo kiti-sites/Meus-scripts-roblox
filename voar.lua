@@ -17,29 +17,27 @@ flyButton.Parent = screenGui
 local isFlying = false
 local flyingSpeed = 50 -- Velocidade do voo
 local verticalSpeed = 20 -- Velocidade para controlar o movimento para cima/baixo
-local bodyGyro -- Para manter o personagem ereto
 
 -- Função para alternar voo
 local function toggleFlight()
     if isFlying then
         isFlying = false
         humanoid.PlatformStand = false
-        if bodyGyro then
-            bodyGyro:Destroy()
-            bodyGyro = nil
-        end
         flyButton.Text = "Ativar Voo"
     else
         isFlying = true
         humanoid.PlatformStand = true
         flyButton.Text = "Desativar Voo"
-        
-        -- Criar um BodyGyro para manter o personagem ereto
-        bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000) -- Força para manter ereto
-        bodyGyro.CFrame = character:WaitForChild("HumanoidRootPart").CFrame
-        bodyGyro.Parent = character:WaitForChild("HumanoidRootPart")
     end
+end
+
+-- Criar um BodyGyro para manter o personagem ereto enquanto voa
+local function createGyro()
+    local bodyGyro = Instance.new("BodyGyro")
+    bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000) -- Força para manter ereto
+    bodyGyro.CFrame = character:WaitForChild("HumanoidRootPart").CFrame
+    bodyGyro.Parent = character:WaitForChild("HumanoidRootPart")
+    return bodyGyro
 end
 
 -- Controle de voo no ar (usando as teclas WASD)
@@ -47,6 +45,9 @@ game:GetService("RunService").Heartbeat:Connect(function()
     if isFlying then
         local rootPart = character:WaitForChild("HumanoidRootPart")
         local moveDirection = humanoid.MoveDirection
+
+        -- Criar um BodyGyro para manter o personagem ereto
+        local bodyGyro = createGyro()
 
         -- Movimento horizontal com base nas teclas WASD
         local horizontalVelocity = moveDirection * flyingSpeed
@@ -59,8 +60,11 @@ game:GetService("RunService").Heartbeat:Connect(function()
             verticalVelocity = -verticalSpeed -- Descer
         end
 
-        -- Atualizar a velocidade do personagem com a física de voo
+        -- Aplicar o movimento ao HumanoidRootPart
         rootPart.Velocity = Vector3.new(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z)
+
+        -- Manter o BodyGyro para manter a orientação correta do personagem no ar
+        bodyGyro.CFrame = rootPart.CFrame
     end
 end)
 
