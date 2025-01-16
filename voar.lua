@@ -46,10 +46,10 @@ end
 game:GetService("RunService").Heartbeat:Connect(function()
     if isFlying then
         local rootPart = character:WaitForChild("HumanoidRootPart")
-        local direction = Vector3.new(mouse.Hit.p.X - rootPart.Position.X, 0, mouse.Hit.p.Z - rootPart.Position.Z).Unit
-        
-        -- Atualiza a velocidade de voo com base na direção do mouse
-        bodyVelocity.Velocity = direction * flyingSpeed + Vector3.new(0, flyingSpeed, 0)
+        local velocity = humanoid.MoveDirection * flyingSpeed
+
+        -- Controla a velocidade vertical (flyingSpeed)
+        bodyVelocity.Velocity = Vector3.new(velocity.X, flyingSpeed, velocity.Z)
     end
 end)
 
