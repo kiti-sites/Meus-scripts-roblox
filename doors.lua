@@ -1,634 +1,915 @@
-local OrionLib = loadstring(game:HttpGetAsync('https://raw.githubusercontent.com/Sc-Rhyan57/Msdoors/refs/heads/main/Library/OrionLibrary_msdoors.lua'))()
-local Tab = Window:MakeTab({
-	Name = "Teste",
-	Icon = "rbxassetid://4483345998",
-	PremiumOnly = false
-})
-Tab:AddButton({
-	Name = "Batatinha frita",
-	Callback = function()
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
-local RunService = game:GetService("RunService")
-
-local MsdoorsNotify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sc-Rhyan57/Notification-doorsAPI/refs/heads/main/Msdoors/MsdoorsApi.lua"))()
-local OrionLib = loadstring(game:HttpGetAsync('https://raw.githubusercontent.com/Sc-Rhyan57/Msdoors/refs/heads/main/Library/OrionLibrary_msdoors.lua'))()
-
-if _G.DoorsSix then
-    MsdoorsNotify("Sistema", "O mod já está carregado!", "", "rbxassetid://6023426923", Color3.new(1, 0, 0), 5)
+--[[
+                                                                                                                     
+     ______  _______            ______       _____           _____            _____         _____            ______  
+    |      \/       \       ___|\     \  ___|\    \     ____|\    \      ____|\    \    ___|\    \       ___|\     \ 
+   /          /\     \     |    |\     \|    |\    \   /     /\    \    /     /\    \  |    |\    \     |    |\     \
+  /     /\   / /\     |    |    |/____/||    | |    | /     /  \    \  /     /  \    \ |    | |    |    |    |/____/|
+ /     /\ \_/ / /    /| ___|    \|   | ||    | |    ||     |    |    ||     |    |    ||    |/____/  ___|    \|   | |
+|     |  \|_|/ /    / ||    \    \___|/ |    | |    ||     |    |    ||     |    |    ||    |\    \ |    \    \___|/ 
+|     |       |    |  ||    |\     \    |    | |    ||\     \  /    /||\     \  /    /||    | |    ||    |\     \    
+|\____\       |____|  /|\ ___\|_____|   |____|/____/|| \_____\/____/ || \_____\/____/ ||____| |____||\ ___\|_____|   
+| |    |      |    | / | |    |     |   |    /    | | \ |    ||    | / \ |    ||    | /|    | |    || |    |     |   
+ \|____|      |____|/   \|____|_____|   |____|____|/   \|____||____|/   \|____||____|/ |____| |____| \|____|_____|   
+    \(          )/         \(    )/       \(    )/        \(    )/         \(    )/      \(     )/      \(    )/     
+     '          '           '    '         '    '          '    '           '    '        '     '        '    '      
+                                                                                                                     
+                                        Por Rhyan57 💜
+  ]]--
+--[[ LIBRARY & API]]--
+if _G.OrionLibLoaded then
+    warn("[Msdoors] • Script já está carregado!")
     return
 end
-_G.DoorsSixLoaded = true
+--[[ VARIAVEIS GLOBAIS ]]--
+_G.msdoors_DeletingFigure = false
+_G.msdoors_InvisFigure = false
+_G.msdoors_InvisGrumbles = false
+_G.msdoors_CurrentlyUsingSGF = false
+_G.msdoors_SpeedBypassBeTurned = nil
+_G.msdoors_SpeedHackBeTurned = nil
 
-MsdoorsNotify("Entre no meu Discord", "https://dsc.gg/msdoors-gg", "", "rbxassetid://8248378219", Color3.new(114,137,218), 19)
+local OrionLib = loadstring(game:HttpGetAsync('https://raw.githubusercontent.com/Sc-Rhyan57/Msdoors/refs/heads/main/Library/OrionLibrary_msdoors.lua'))()
+local Window = OrionLib:MakeWindow({IntroText = "Msdoors | V1",Icon = "rbxassetid://100573561401335", IntroIcon = "rbxassetid://95869322194132", Name = "MsDoors | The Hotel", HidePremium = false, SaveConfig = true, ConfigFolder = ".msdoors/places/hotel"})
+local MsdoorsNotify = loadstring(game:HttpGet("https://raw.githubusercontent.com/Sc-Rhyan57/Notification-doorsAPI/refs/heads/main/Msdoors/MsdoorsApi.lua"))()
+local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/MS-ESP/refs/heads/main/source.lua"))()
+print("[Msdoors] • [✅] Inialização da livraria e apis")
 
-_G.Config = {
-    luzAtual = "🟢",
-    tempoTrocaLuzVerde = math.random(50, 70),
-    tempoTrocaLuzVermelha = math.random(25, 35),
-    salaAtual = 0,
-    jogadoresMortos = {},
-    loopsAtivos = true,
-    itensLoopAtivo = true,
-    pausarPorSala = false,
-    notificacaoSalaEspecial = false,
-    systemActive = false,
-    gameWon = false,
-    hostPlayer = game.Players.LocalPlayer.Name,
-    voteInProgress = false,
-    currentVotes = {yes = 0, no = 0},
-    debugMode = false,
-    autoReviveEnabled = true,
-    itemDropInterval = {min = 60, max = 120},
-    specialRooms = {"SeekIntro", "Seek", "Halt", "A-60", "A-90"},
-    debugLogs = {},
-    commandsEnabled = true,
-    modEnabled = true,
-    debugFilePath = ".msprojects/Doors/debug_logs.txt"
-}
+--[[ SERVIÇOS ]]--
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local TextChatService = game:GetService("TextChatService")
+local UserInputService = game:GetService("UserInputService")
+local PathfindingService = game:GetService("PathfindingService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local LocalPlayer = Players.LocalPlayer
+local LatestRoom = ReplicatedStorage:WaitForChild("GameData"):WaitForChild("LatestRoom")
+print("[Msdoors] • [✅] Inicialização de Serviços")
 
-_G.Items = {
-    common = {"Flashlight", "Vitamins", "Lighter", "Shakelight", "Candle", "Bread"},
-    uncommon = {"Crucifix", "TipJar", "StarVial", "Bulklight", "Smoothie", "Shears"},
-    rare = {"HolyGrenade", "SkeletonKey", "GoldKey", "Shield", "Sword"},
-    legendary = {"RiftSmoothie", "RiftCandle", "StarBottle"}
-}
 
-_G.itensAleatorios = {}
-for _, items in pairs(_G.Items) do
-    for _, item in ipairs(items) do
-        table.insert(_G.itensAleatorios, item)
-    end
-end
+--[[ SCRIPT ]]--
+local GroupPrincipal = Window:MakeTab({
+    Name = "Principal",
+    Icon = "rbxassetid://7733765045",
+    PremiumOnly = false
+})
+local AutomationGroup = GroupPrincipal:AddSection({Name = "Automation"})
+local PlayerGroup = GroupPrincipal:AddSection({Name = "Player"})
 
-_G.Entities = {
-    common = {"Eyes", "Halt", "Timothy", "Screech"},
-    uncommon = {"Rush", "Ambush", "Glitch", "Shadow"},
-    rare = {"Figure", "A-60", "A-90", "Blitz"},
-    legendary = {"A-120", "Jeff The Killer", "Lookman"}
-}
 
-_G.entidadesAleatorias = {}
-for _, entities in pairs(_G.Entities) do
-    for _, entity in ipairs(entities) do
-        table.insert(_G.entidadesAleatorias, entity)
-    end
-end
+local GroupExploits = Window:MakeTab({
+    Name = "Exploits",
+    Icon = "rbxassetid://7733765045",
+    PremiumOnly = false
+})
+local ByppasGroup = GroupExploits:AddSection({Name = "Byppas"})
+local TrollGroup = GroupExploits:AddSection({Name = "Troll"})
 
-local TimerGui = Instance.new("ScreenGui")
-local TimerFrame = Instance.new("Frame")
-local TimerLabel = Instance.new("TextLabel")
+local GroupVisual = Window:MakeTab({
+    Name = "Visual",
+    Icon = "rbxassetid://7733765045",
+    PremiumOnly = false
+})
+local NotificationGroup = GroupVisual:AddSection({Name = "Notification"})
+local PlayerGroup = GroupVisual:AddSection({Name = "Player"})
+local GameGroup = GroupVisual:AddSection({Name = "Game"})
+local EspGroup = GroupVisual:AddSection({Name = "Esp"})
 
-TimerGui.Name = "EventTimer"
-TimerGui.ResetOnSpawn = false
-TimerGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local GroupCredits = Window:MakeTab({
+    Name = "Msdoors",
+    Icon = "rbxassetid://7733765045",
+    PremiumOnly = false
+})
 
-TimerFrame.Name = "TimerFrame"
-TimerFrame.Size = UDim2.new(0, 150, 0, 50)
-TimerFrame.Position = UDim2.new(0.85, 0, 0.1, 0)
-TimerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-TimerFrame.BackgroundTransparency = 0.5
-TimerFrame.Parent = TimerGui
-
-TimerLabel.Name = "TimerLabel"
-TimerLabel.Size = UDim2.new(1, 0, 1, 0)
-TimerLabel.BackgroundTransparency = 1
-TimerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TimerLabel.TextSize = 20
-TimerLabel.Font = Enum.Font.SourceSansBold
-TimerLabel.Parent = TimerFrame
-
-local function SendMessage(message)
-    if _G.Config.debugMode then
-        message = "[DEBUG] " .. message
-    end
-    if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-        local channel = TextChatService.TextChannels.RBXGeneral
-        channel:SendAsync(message)
-    else
-        ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(message, "All")
-    end
-end
-
-local function Notificar(titulo, descricao, tempo, cor)
-    MsdoorsNotify(titulo, descricao, "", "rbxassetid://6023426923", cor or Color3.new(0, 1, 0), tempo or 5)
-end
-
-local function saveDebugLog(message)
-    if _G.Config.debugMode then
-        local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-        local logMessage = string.format("[%s] %s", timestamp, message)
-        table.insert(_G.Config.debugLogs, logMessage)
-        print(logMessage)
-        pcall(function()
-            if not isfolder("msprojects") then
-                makefolder("msprojects")
-            end
-            if not isfolder("msprojects/Doors") then
-                makefolder("msprojects/Doors")
-            end
-            appendfile(_G.Config.debugFilePath, logMessage .. "\n")
-        end)
-    end
-end
-
-local function reviverTodos()
-    local args = {[1] = "RevivePlayer", [2] = {["Players"] = {}}}
-    for _, player in ipairs(Players:GetPlayers()) do
-        args[2]["Players"][player.Name] = player.Name
-    end
-    local deleteArgs = {[1] = "DELETE ALL", [2] = {}}
-    ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(deleteArgs))
-    ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    wait(1)
-    Notificar("Reviver", "Todos os jogadores foram revividos!", 5)
-    SendMessage("✨ Todos os jogadores foram revividos e as entidades foram removidas!")
-    _G.Config.luzAtual = "🟢"
-    alterarLuz("🟢")
-end
-
-local function verificarMortos()
-    local todosJogadores = Players:GetPlayers()
-    local jogadoresMortos = 0
-    for _, player in ipairs(todosJogadores) do
-        if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health <= 0 then
-            jogadoresMortos = jogadoresMortos + 1
+GroupCredits:AddLabel('<font color="#00FFFF">Créditos</font>')
+GroupCredits:AddLabel('• Rhyan57 - <font color="#FFA500">DONO</font>')
+GroupCredits:AddLabel('• SeekAlegriaFla - <font color="#FFA500">SUB-DONO</font>')
+GroupCredits:AddLabel('<font color="#00FFFF">Redes</font>')
+GroupCredits:AddLabel('• Discord: <font color="#9DABFF">https://dsc.gg/msdoors-gg</font>')
+GroupCredits:AddButton({
+    Name = "Copiar Link",
+    Callback = function()
+        local url = "https://dsc.gg/msdoors-gg"
+        if syn then
+            syn.request({
+                Url = url,
+                Method = "GET"
+            })
+        elseif setclipboard then
+            setclipboard(url)
+            OrionLib:MakeNotification({
+                Name = "Link Copiado!",
+                Content = "Seu executor não suporta redirecionar. Link copiado.",
+                Time = 5
+            })
+        else
+            OrionLib:MakeNotification({
+                Name = "LOL",
+                Content = "Seu executor não suporta redirecionar ou copiar links.",
+                Time = 5
+            })
         end
     end
-    if jogadoresMortos == #todosJogadores and _G.Config.autoReviveEnabled then
-        reviverTodos()
+})
+GroupCredits:AddLabel('<font color="#FF0000">Script</font>')
+GroupCredits:AddButton({
+    Name = "Descarregar",
+    Callback = function()
+        for _, thread in pairs(getfenv()) do
+            if typeof(thread) == "thread" then
+                task.cancel(thread)
+            end
+        end
+      
+        notificationsEnabled = false
+        InstaInteractEnabled = false
+        AutoInteractEnabled = false
+        initialized = false
+        verificarEspObjetos = false
+        desativarESPObjetos()
+      
+        if OrionLib then
+            OrionLib:Destroy()
+        end
+        warn("[Msdoors] • Todos os sistemas foram desativados e a interface fechada.")
     end
-end
+})
 
-local function darItensAleatorios(rarity)
-    local itemPool = rarity and _G.Items[rarity] or _G.itensAleatorios
-    for _, player in ipairs(Players:GetPlayers()) do
-        local itemAleatorio = itemPool[math.random(#itemPool)]
-        local args = {
-            [1] = "Give Items",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Items"] = {[itemAleatorio] = itemAleatorio}
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end
-    Notificar("Itens", "Você recebeu um item " .. (rarity and rarity or "aleatório") .. "!", 5)
-    SendMessage("🎁 Itens " .. (rarity and rarity or "aleatórios") .. " distribuídos!")
-end
-
-local function alterarLuz(cor)
-    _G.Config.luzAtual = cor
-    local args = {[1] = "LightRoom", [2] = {["Light Color"] = cor == "🟢" and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)}}
-    ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    if cor == "🟢" then
-        SendMessage("Luz verde - Ande")
-        Notificar("Luz Verde", "Movimento permitido!", 5)
-    else
-        SendMessage("🔴 Luz Vermelha - PARE IMEDIATAMENTE!")
-        Notificar("Luz Vermelha", "PARE DE SE MOVER!", 5)
-        spawn(function()
-            while _G.Config.loopsAtivos and _G.Config.luzAtual == "🔴" do
-                for _, player in ipairs(Players:GetPlayers()) do
-                    if player.Character and player.Character:FindFirstChild("Humanoid") and 
-                       player.Character.Humanoid.Health > 0 and player.Character.Humanoid.MoveDirection.Magnitude > 0 then
-                        local entidade = _G.entidadesAleatorias[math.random(#_G.entidadesAleatorias)]
-                        local morteAleatoria = math.random(1, 2) == 1 and "KillPlayer" or "ExplodePlayer"
-                        local args = {[1] = morteAleatoria, [2] = {["Players"] = {[player.Name] = player.Name}}}
-                        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-                        local entidadeArgs = {[1] = entidade, [2] = {["Players"] = {[player.Name] = player.Name}}}
-                        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(entidadeArgs))
-                        SendMessage("💀 " .. player.Name .. " se moveu na luz vermelha e invocou " .. entidade .. "!")
+ByppasGroup:AddButton({
+    Name = "Delete Figure",
+    Callback = function()
+        local room = game.Players.LocalPlayer:GetAttribute("CurrentRoom")
+        local crooms = workspace.CurrentRooms
+        local notsuccess = 0
+        
+        if _G.msdoors_DeletingFigure == false then
+            _G.msdoors_DeletingFigure = true
+            local Part = Instance.new("Part", workspace)
+            local Attachment1 = Instance.new("Attachment", Part)
+            Part.Anchored = true
+            Part.Position = Vector3.new(0,0,0)
+            Attachment1.Position = Vector3.new(0,-40000,0)
+            
+            if crooms:WaitForChild(room):FindFirstChild("FigureSetup") then
+                if crooms:WaitForChild(room).FigureSetup.FigureRig:FindFirstChild("Root") then
+                    local figure = crooms:WaitForChild(room).FigureSetup.FigureRig
+                    local Torque = Instance.new("Torque")
+                    Torque.Parent = figure.Hitbox
+                    Torque.Torque = Vector3.new(100000,100000,100000)
+                    local AlignPosition = Instance.new("AlignPosition")
+                    local Attachment2 = Instance.new("Attachment")
+                    AlignPosition.Parent = figure.Hitbox
+                    Attachment2.Parent = figure.Hitbox
+                    Torque.Attachment0 = Attachment2
+                    AlignPosition.MaxForce = 9999999999999999
+                    AlignPosition.MaxVelocity = math.huge
+                    AlignPosition.Responsiveness = 100
+                    AlignPosition.Attachment0 = Attachment2
+                    AlignPosition.Attachment1 = Attachment1
+                    
+                    task.wait(1.5)
+                    Part:Destroy()
+                    Attachment1:Destroy()
+                    Torque:Destroy()
+                    AlignPosition:Destroy()
+                    Attachment2:Destroy()
+                    
+                    repeat 
+                        notsuccess = notsuccess + 1 
+                        task.wait(0.02) 
+                    until figure:FindFirstChild("Hitbox") == false or notsuccess == 100
+                    
+                    if notsuccess == 100 then
+                        OrionLib:MakeNotification({
+                            Name = "Error",
+                            Content = "Failed to delete figure",
+                            Time = 4
+                        })
+                    else
+                        OrionLib:MakeNotification({
+                            Name = "Success",
+                            Content = "Figure deleted successfully!",
+                            Time = 4
+                        })
                     end
-                end
-                verificarMortos()
-                wait(0.5)
-            end
-        end)
-    end
-end
-
-local function toggleMod(enable)
-    _G.Config.modEnabled = enable
-    _G.Config.systemActive = enable
-    _G.Config.loopsAtivos = enable
-    _G.Config.itensLoopAtivo = enable
-    if not enable then
-        _G.Config.luzAtual = "🟢"
-        alterarLuz("🟢")
-        TimerLabel.Text = "Mod Desativado"
-    end
-    local status = enable and "ativado" or "desativado"
-    SendMessage("🔄 Mod foi " .. status .. "!")
-    Notificar("Sistema", "Mod " .. status .. "!", 5, enable and Color3.new(0, 1, 0) or Color3.new(1, 0, 0))
-    saveDebugLog("Mod status changed: " .. status)
-end
-
-local function monitorarSala()
-    local player = Players.LocalPlayer
-    local currentRoom = player:GetAttribute("CurrentRoom")
-    if currentRoom then
-        _G.Config.salaAtual = currentRoom
-        local room = workspace.CurrentRooms:FindFirstChild(tostring(currentRoom))
-        if room and room:GetAttribute("RawName") then
-            local roomName = room:GetAttribute("RawName")
-            local isSpecialRoom = false
-            for _, specialRoom in ipairs(_G.Config.specialRooms) do
-                if roomName:find(specialRoom) then
-                    isSpecialRoom = true
-                    break
-                end
-            end
-            if isSpecialRoom then
-                if not _G.Config.notificacaoSalaEspecial then
-                    _G.Config.pausarPorSala = true
-                    _G.Config.loopsAtivos = false
-                    _G.Config.notificacaoSalaEspecial = true
-                    Notificar("Sala Especial", "Sistema pausado temporariamente", 5, Color3.new(1, 0, 0))
-                    SendMessage("⚠️ Sistema pausado - Sala especial detectada!")
+                else
+                    OrionLib:MakeNotification({
+                        Name = "Error",
+                        Content = "Figure not found",
+                        Time = 3
+                    })
+                    Part:Destroy()
+                    Attachment1:Destroy()
                 end
             else
-                if _G.Config.pausarPorSala then
-                    _G.Config.pausarPorSala = false
-                    _G.Config.loopsAtivos = true
-                    _G.Config.notificacaoSalaEspecial = false
-                    Notificar("Sistema Retomado", "Continuando operação normal", 5)
-                    SendMessage("✅ Sistema retomado - Você saiu da sala especial!")
+                OrionLib:MakeNotification({
+                    Name = "Error",
+                    Content = "Figure not found",
+                    Time = 3
+                })
+                Part:Destroy()
+                Attachment1:Destroy()
+            end
+            _G.msdoors_DeletingFigure = false
+        end
+    end
+})
+
+ByppasGroup:AddToggle({
+    Name = "Delete Grumbles",
+    Default = false,
+    Callback = function(Value)
+        local room = game.Players.LocalPlayer:GetAttribute("CurrentRoom")
+        local crooms = workspace.CurrentRooms
+        
+        if Value then
+            if crooms:WaitForChild(room):FindFirstChild("_NestHandler") then
+                if crooms:WaitForChild(room):WaitForChild("_NestHandler"):FindFirstChild("Grumbles") then
+                    _G.msdoors_InvisGrumbles = true
+                    for i,v in ipairs(crooms:WaitForChild(room):WaitForChild("_NestHandler").Grumbles:GetChildren()) do 
+                        v.MainPart.GrumbleAttach.CFrame = CFrame.new(Vector3.new(0,500,0)) 
+                    end
+                else
+                    OrionLib:MakeNotification({
+                        Name = "Error",
+                        Content = "Grumbles not found",
+                        Time = 3
+                    })
+                end
+            else
+                OrionLib:MakeNotification({
+                    Name = "Error",
+                    Content = "Grumbles not found",
+                    Time = 3
+                })
+            end
+        else
+            if _G.msdoors_InvisGrumbles == true then
+                _G.msdoors_InvisGrumbles = false
+                if crooms:WaitForChild(room):FindFirstChild("_NestHandler") then
+                    if crooms:WaitForChild(room):WaitForChild("_NestHandler"):FindFirstChild("Grumbles") then
+                        for i,v in ipairs(crooms:WaitForChild(room):WaitForChild("_NestHandler").Grumbles:GetChildren()) do 
+                            v.MainPart.GrumbleAttach.CFrame = CFrame.new(Vector3.new(0,0,0)) 
+                        end
+                    end
                 end
             end
         end
-        if currentRoom >= 2 and not _G.Config.systemActive then
-            _G.Config.systemActive = true
-            SendMessage("✅ Mod ativado - Passando da porta 2!")
-            SendMessage("📍 Quando estiver vermelho pare quando estiver verde ande.[ Fique de olho ao chat! ]")
-            Notificar("Sistema Ativo", "Quando estiver vermelho PARE quando estiver VERDE ande!", 5)
+    end
+})
+TrollGroup:AddToggle({
+    Name = "Animação de Atordoar",
+    Default = false,
+    Callback = function(Value)
+        local lplr = game.Players.LocalPlayer
+        if Value then
+            lplr.Character:SetAttribute('Stunned', true)
+            lplr.Character.Humanoid:SetAttribute('Stunned', true)
+        else
+            lplr.Character:SetAttribute('Stunned', false)
+            lplr.Character.Humanoid:SetAttribute('Stunned', false)
         end
-        if currentRoom == 100 and not _G.Config.gameWon then
-            _G.Config.gameWon = true
-            local allPlayersAlive = true
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player.Character and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health <= 0 then
-                    allPlayersAlive = false
-                    break
-                end
+    end
+})
+
+TrollGroup:AddToggle({
+    Name = "Animação de Pensamento",
+    Default = false,
+    Callback = function(Value)
+        local lplr = game.Players.LocalPlayer
+        local thinkanims = {"18885101321", "18885098453", "18885095182"}
+        
+        if Value then
+            local animation = Instance.new("Animation")
+            animation.AnimationId = "rbxassetid://" .. thinkanims[math.random(1, #thinkanims)]
+            animtrack = lplr.Character:FindFirstChildWhichIsA("Humanoid"):LoadAnimation(animation)
+            animtrack.Looped = true
+            animtrack:Play()
+        else
+            if animtrack then
+                animtrack:Stop()
+                animtrack:Destroy()
             end
-            if allPlayersAlive then
-                SendMessage("🏆 PARABÉNS! Você chegou na porta 100!")
-                SendMessage("🎉 Todos os jogadores sobreviveram até o final!")
-                Notificar("VITÓRIA", "Você completou o desafio!", 10, Color3.new(0, 1, 0))
-                for _, player in ipairs(Players:GetPlayers()) do
-                    local args = {
-                        [1] = "Apply Changes",
-                        [2] = {
-                            ["Players"] = {[player.Name] = player.Name},
-                            ["Max Health"] = 200,
-                            ["Star Shield"] = 100,
-                            ["Health"] = 200,
-                            ["Speed Boost"] = 20,
-                            ["God Mode"] = true
-                        }
-                    }
-                    ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-                end
-                darItensAleatorios("legendary")
-                SendMessage("🎁 Recompensas de vitória distribuídas!")
-            end
+        end
+    end
+})
+
+
+local ObjectiveESPConfig = {
+    Types = {
+        KeyObtain = {
+            Name = "Chave",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        LeverForGate = {
+            Name = "Alavanca",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        ElectricalKeyObtain = {
+            Name = "Chave elétrica",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        LiveHintBook = {
+            Name = "Livro",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        LiveBreakerPolePickup = {
+            Name = "Disjuntor",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        MinesGenerator = {
+            Name = "Gerador",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        MinesGateButton = {
+            Name = "Botão do portão",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        FuseObtain = {
+            Name = "Fusível",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        MinesAnchor = {
+            Name = "Torre",
+            Color = Color3.fromRGB(0, 255, 0)
+        },
+        WaterPump = {
+            Name = "Bomba de água",
+            Color = Color3.fromRGB(0, 255, 0)
+        }
+    },
+    Settings = {
+        MaxDistance = 5000,
+        UpdateInterval = 5,
+        TextSize = 16,
+        FillTransparency = 0.75,
+        OutlineTransparency = 0,
+        TracerStartPosition = "Bottom",
+        ArrowCenterOffset = 300
+    }
+}
+
+local ObjectiveESPManager = {
+    ActiveESPs = {},
+    IsEnabled = false,
+    IsChecking = false,
+    CurrentRoom = nil
+}
+
+function ObjectiveESPManager:CreateESP(object, config)
+    if not object or not object.PrimaryPart then return nil end
+    
+    local espInstance = ESPLibrary.ESP.Highlight({
+        Name = config.Name,
+        Model = object,
+        MaxDistance = ObjectiveESPConfig.Settings.MaxDistance,
+        
+        FillColor = config.Color,
+        OutlineColor = config.Color,
+        TextColor = config.Color,
+        TextSize = ObjectiveESPConfig.Settings.TextSize,
+        
+        FillTransparency = ObjectiveESPConfig.Settings.FillTransparency,
+        OutlineTransparency = ObjectiveESPConfig.Settings.OutlineTransparency,
+        
+        Tracer = {
+            Enabled = true,
+            From = ObjectiveESPConfig.Settings.TracerStartPosition,
+            Color = config.Color
+        },
+        
+        Arrow = {
+            Enabled = true,
+            CenterOffset = ObjectiveESPConfig.Settings.ArrowCenterOffset,
+            Color = config.Color
+        }
+    })
+    
+    return espInstance
+end
+
+function ObjectiveESPManager:HandleSpecialCases(object, config)
+    if object.Name == "MinesAnchor" then
+        local sign = object:WaitForChild("Sign", 5)
+        if sign and sign:FindFirstChild("TextLabel") then
+            config.Name = string.format("Torre %s", sign.TextLabel.Text)
+        end
+    elseif object.Name == "WaterPump" then
+        local wheel = object:WaitForChild("Wheel", 5)
+        local onFrame = object:FindFirstChild("OnFrame", true)
+        
+        if not (wheel and onFrame and onFrame.Visible) then
+            return nil
+        end
+        
+        onFrame:GetPropertyChangedSignal("Visible"):Connect(function()
+            self:RemoveESP(object)
+        end)
+    end
+    
+    return config
+end
+
+function ObjectiveESPManager:AddESP(object)
+    if not object or self.ActiveESPs[object] then return end
+    
+    local config = ObjectiveESPConfig.Types[object.Name]
+    if not config then return end
+    
+    config = self:HandleSpecialCases(object, table.clone(config))
+    if not config then return end
+    
+    local espInstance = self:CreateESP(object, config)
+    if espInstance then
+        self.ActiveESPs[object] = espInstance
+    end
+end
+
+function ObjectiveESPManager:RemoveESP(object)
+    if self.ActiveESPs[object] then
+        self.ActiveESPs[object].Destroy()
+        self.ActiveESPs[object] = nil
+    end
+end
+
+function ObjectiveESPManager:ScanRoom()
+    if not self.IsEnabled then return end
+    
+    local currentRoom = workspace.CurrentRooms:FindFirstChild(game.Players.LocalPlayer:GetAttribute("CurrentRoom"))
+    if not currentRoom then return end
+    
+    if self.CurrentRoom ~= currentRoom then
+        self:ClearESPs()
+        self.CurrentRoom = currentRoom
+    end
+    
+    for _, asset in pairs(currentRoom:GetDescendants()) do
+        if ObjectiveESPConfig.Types[asset.Name] then
+            self:AddESP(asset)
         end
     end
 end
 
-local Commands = {
-    ["!godmode"] = function(player)
-     if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {
-            [1] = "Apply Changes",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Max Health"] = 100,
-                ["Star Shield"] = 0,
-                ["Health"] = 100,
-                ["God Mode"] = true
+function ObjectiveESPManager:ClearESPs()
+    for object, esp in pairs(self.ActiveESPs) do
+        esp.Destroy()
+    end
+    self.ActiveESPs = {}
+end
+
+function ObjectiveESPManager:StartScanning()
+    if self.IsChecking then return end
+    self.IsChecking = true
+    
+    spawn(function()
+        while self.IsChecking do
+            self:ScanRoom()
+            wait(ObjectiveESPConfig.Settings.UpdateInterval)
+        end
+    end)
+end
+
+function ObjectiveESPManager:StopScanning()
+    self.IsChecking = false
+    self:ClearESPs()
+end
+
+EspGroup:AddToggle({
+    Name = "esp de objetivo",
+    Default = false,
+    Callback = function(state)
+        ObjectiveESPManager.IsEnabled = state
+        
+        if state then
+            ObjectiveESPManager:StartScanning()
+        else
+            ObjectiveESPManager:StopScanning()
+        end
+    end
+})
+
+game.Players.LocalPlayer:GetAttributeChangedSignal("CurrentRoom"):Connect(function()
+    if ObjectiveESPManager.IsEnabled then
+        ObjectiveESPManager:ScanRoom()
+    end
+end)
+
+GameGroup:AddToggle({
+    Name = "No Ambience",
+    Default = false,
+    Callback = function(Value)
+        if not game.SoundService:FindFirstChild("AmbienceRemove") then
+            local ambiencerem = Instance.new("BoolValue")
+            ambiencerem.Name = "AmbienceRemove"
+            ambiencerem.Parent = game.SoundService
+        end
+        if Value then
+            workspace.Ambience_Dark.Volume = 0
+            if workspace:FindFirstChild("AmbienceMines") then
+                workspace.AmbienceMines.Volume = 0
+            else
+                workspace.Ambience_Hotel.Volume = 0
+                workspace.Ambience_Hotel2.Volume = 0
+                workspace.Ambience_Hotel3.Volume = 0
+            end
+            game.SoundService.AmbienceRemove.Value = true
+            task.wait()
+            repeat 
+                if workspace.Terrain:FindFirstChildWhichIsA("Attachment") then 
+                    workspace.Terrain:FindFirstChildWhichIsA("Attachment"):Destroy()
+                end 
+                task.wait(0.01) 
+            until game.SoundService.AmbienceRemove.Value == false
+        else
+            workspace.Ambience_Dark.Volume = 0.6
+            if workspace:FindFirstChild("AmbienceMines") then
+                workspace.AmbienceMines.Volume = 0.4
+            else
+                workspace.Ambience_Hotel.Volume = 0.2
+                workspace.Ambience_Hotel2.Volume = 0.3
+                workspace.Ambience_Hotel3.Volume = 0.05
+            end
+            game.SoundService.AmbienceRemove.Value = false
+        end
+    end
+})
+
+GameGroup:AddToggle({
+    Name = "No Wardrobe Vignette",
+    Default = false,
+    Callback = function(Value)
+        local vignette = game:GetService("Players").LocalPlayer.PlayerGui.MainUI.MainFrame.HideVignette
+        if Value then
+            vignette.Size = UDim2.new(0,0,0,0)
+        else
+            vignette.Size = UDim2.new(1,0,1,0)
+        end
+    end
+})
+-- Tabela de Entidades para notificação.
+local EntityTable = {
+    ["Names"] = {"BackdoorRush", "BackdoorLookman", "RushMoving", "AmbushMoving", "Eyes", "JeffTheKiller", "A60", "A120"},
+    ["NotifyReason"] = {
+        ["A60"] = { ["Image"] = "12350986086", ["Title"] = "A-60", ["Description"] = "A-60 SPAWNOU!" },
+        ["A120"] = { ["Image"] = "12351008553", ["Title"] = "A-120", ["Description"] = "A-120 SPAWNOU!" },
+        ["HaltRoom"] = { ["Image"] = "11331795398", ["Title"] = "Halt", ["Description"] = "Prepare-se para Halt.",  ["Spawned"] = true },
+        ["Window_BrokenSally"] = { ["Image"] = "100573561401335", ["Title"] = "Sally", ["Description"] = "Sally SPAWNOU!",  ["Spawned"] = true },
+        ["BackdoorRush"] = { ["Image"] = "11102256553", ["Title"] = "Backdoor Blitz", ["Description"] = "Blitz SPAWNOU!" },
+        ["RushMoving"] = { ["Image"] = "11102256553", ["Title"] = "Rush", ["Description"] = "Rush SPAWNOU!" },
+        ["AmbushMoving"] = { ["Image"] = "10938726652", ["Title"] = "Ambush", ["Description"] = "Ambush SPAWNOU!" },
+        ["Eyes"] = { ["Image"] = "10865377903", ["Title"] = "Eyes", ["Description"] = "Não olhe para os olhos!", ["Spawned"] = true },
+        ["BackdoorLookman"] = { ["Image"] = "16764872677", ["Title"] = "Backdoor Lookman", ["Description"] = "Olhe para baixo!", ["Spawned"] = true },
+        ["JeffTheKiller"] = { ["Image"] = "98993343", ["Title"] = "Jeff The Killer", ["Description"] = "Fuja do Jeff the Killer!" }
+    }
+}
+
+local notificationsEnabled = false
+local initialized = false
+
+function MonitorEntities()
+    game:GetService("RunService").Stepped:Connect(function()
+        if notificationsEnabled then
+            for _, entityName in ipairs(EntityTable.Names) do
+                local entity = workspace:FindFirstChild(entityName)
+                if entity and not entity:GetAttribute("Notified") then
+                    entity:SetAttribute("Notified", true)
+                    NotifyEntity(entityName)
+                end
+            end
+        end
+    end)
+end
+
+function NotifyEntity(entityName)
+    local notificationData = EntityTable.NotifyReason[entityName]
+    if notificationData then
+        MsdoorsNotify(
+            notificationData.Title,
+            notificationData.Description,
+            "",
+            "rbxassetid://" .. notificationData.Image,
+            Color3.fromRGB(255, 0, 0),
+            5
+        )
+    end
+end
+
+MonitorEntities()
+NotificationGroup:AddToggle({
+    Name = "Notificar Entidades",
+    Save = true,
+    Flag = "NotifyEntitys-toggle",
+    Default = false,
+    Callback = function(value)
+        if not initialized then
+            initialized = true
+            return
+        end
+        
+        notificationsEnabled = value
+        local sound = Instance.new("Sound")
+        sound.SoundId = value and "rbxassetid://4590657391" or "rbxassetid://4590662766"
+        sound.Volume = 1
+        sound.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+        sound:Play()
+        sound.Ended:Connect(function()
+            sound:Destroy()
+        end)
+        
+        MsdoorsNotify(
+            "MsDoors",
+            value and "Notificações de Entidades ativas!" or "Notificações de Entidades desativadas!",
+            "",
+            "rbxassetid://100573561401335",
+            value and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0),
+            3
+        )
+    end
+})
+
+local Toggles = {}
+local InstaInteractEnabled = false
+
+local function UpdateProximityPrompts()
+    for _, prompt in pairs(workspace.CurrentRooms:GetDescendants()) do
+        if prompt:IsA("ProximityPrompt") then
+            if InstaInteractEnabled then
+                if not prompt:GetAttribute("Hold") then 
+                    prompt:SetAttribute("Hold", prompt.HoldDuration)
+                end
+                prompt.HoldDuration = 0
+            else
+                prompt.HoldDuration = prompt:GetAttribute("Hold") or 0
+            end
+        end
+    end
+end
+workspace.CurrentRooms.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("ProximityPrompt") then
+        if InstaInteractEnabled then
+            if not descendant:GetAttribute("Hold") then 
+                descendant:SetAttribute("Hold", descendant.HoldDuration)
+            end
+            descendant.HoldDuration = 0
+        end
+    end
+end)
+
+AutomationGroup:AddToggle({
+    Name = "Instant Interaction",
+    Default = false,
+    Save = true,
+    Flag = "instantInteract-toggle",
+    Callback = function(value)
+        InstaInteractEnabled = value
+        UpdateProximityPrompts()
+    end
+})
+AutomationGroup:AddLabel("")
+
+shared = {
+    Character = game.Players.LocalPlayer.Character or game.Players.LocalPlayer.CharacterAdded:Wait(),
+    LocalPlayer = game.Players.LocalPlayer,
+    Humanoid = nil,
+}
+
+local function InitializeScript()
+    shared.Humanoid = shared.Character:WaitForChild("Humanoid")
+    game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+        shared.Character = char
+        shared.Humanoid = char:WaitForChild("Humanoid")
+    end)
+end
+
+shared.fireproximityprompt = function(prompt)
+    if prompt.ClassName == "ProximityPrompt" then
+        fireproximityprompt(prompt)
+    end
+end
+
+local Script = {
+    PromptTable = {
+        GamePrompts = {},
+        Aura = {
+            ["ActivateEventPrompt"] = false,
+            ["AwesomePrompt"] = true,
+            ["FusesPrompt"] = true,
+            ["HerbPrompt"] = false,
+            ["LeverPrompt"] = true,
+            ["LootPrompt"] = false,
+            ["ModulePrompt"] = true,
+            ["SkullPrompt"] = false,
+            ["UnlockPrompt"] = true,
+            ["ValvePrompt"] = false,
+            ["PropPrompt"] = true
+        },
+        AuraObjects = {
+            "Lock",
+            "Button"
+        },
+        Clip = {
+            "AwesomePrompt",
+            "FusesPrompt",
+            "HerbPrompt",
+            "HidePrompt",
+            "LeverPrompt",
+            "LootPrompt",
+            "ModulePrompt",
+            "Prompt",
+            "PushPrompt",
+            "SkullPrompt",
+            "UnlockPrompt",
+            "ValvePrompt"
+        },
+        ClipObjects = {
+            "LeverForGate",
+            "LiveBreakerPolePickup",
+            "LiveHintBook",
+            "Button",
+        },
+        Excluded = {
+            Prompt = {
+                "HintPrompt",
+                "InteractPrompt"
+            },
+            Parent = {
+                "KeyObtainFake",
+                "Padlock"
+            },
+            ModelAncestor = {
+                "DoorFake"
             }
         }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
+    },
+    Temp = {
+        PaintingDebounce = {}
+    }
+}
+
+Script.Functions = {
+    GetAllPromptsWithCondition = function(condition)
+        local prompts = {}
+        for _, v in pairs(game:GetService("Workspace"):GetDescendants()) do
+            if v:IsA("ProximityPrompt") then
+                if condition(v) then
+                    table.insert(prompts, v)
+                end
+            end
+        end
+        return prompts
+    end,
+
+    DistanceFromCharacter = function(object)
+        if not shared.Character or not shared.Character:FindFirstChild("HumanoidRootPart") or not object then
+            return math.huge
+        end
+        local objectPosition = object:IsA("BasePart") and object.Position or 
+                             object:FindFirstChild("HumanoidRootPart") and object.HumanoidRootPart.Position or
+                             object:FindFirstChildWhichIsA("BasePart") and object:FindFirstChildWhichIsA("BasePart").Position
+        if not objectPosition then
+            return math.huge
+        end
+        return (shared.Character.HumanoidRootPart.Position - objectPosition).Magnitude
     end,
     
-    ["!vida"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {
-            [1] = "Apply Changes",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Max Health"] = 100,
-                ["Star Shield"] = 100,
-                ["Health"] = 100,
-                ["God Mode"] = false
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!pxitem"] = function(player, args)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        if not args[2] then
-            SendMessage("❌ Use: !pxitem [nome do item]")
-            return
+    IsExcluded = function(prompt)
+        for _, excludedName in ipairs(Script.PromptTable.Excluded.Prompt) do
+            if prompt.Name == excludedName then return true end
         end
-        local itemName = args[2]
-        local validItem = false
-        local actualItemName
-        for rarity, items in pairs(_G.Items) do
-            for _, item in ipairs(items) do
-                if item:lower() == itemName:lower() then
-                    validItem = true
-                    actualItemName = item
-                    break
-                end
-            end
-            if validItem then break end
-        end
-        if not validItem then
-            SendMessage("❌ Item não encontrado! Use !items para ver a lista de itens disponíveis.")
-            return
-        end
-        local args = {
-            [1] = "Give Items",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Items"] = {[actualItemName] = actualItemName}
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!revive"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {[1] = "RevivePlayer", [2] = {["Players"] = {[player.Name] = player.Name}}}
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!speed"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {
-            [1] = "Apply Changes",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Max Health"] = 100,
-                ["Health"] = 100,
-                ["Speed Boost"] = 25
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!resetspeed"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {
-            [1] = "Apply Changes",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Speed Boost"] = 0
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!item"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local itemAleatorio = _G.itensAleatorios[math.random(#_G.itensAleatorios)]
-        local args = {
-            [1] = "Give Items",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Items"] = {[itemAleatorio] = itemAleatorio}
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-        SendMessage("🎁 " .. player.Name .. " recebeu um item aleatório: " .. itemAleatorio)
-    end,
-
-    ["!shield"] = function(player)
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        local args = {
-            [1] = "Apply Changes",
-            [2] = {
-                ["Players"] = {[player.Name] = player.Name},
-                ["Star Shield"] = 100,
-                ["Max Health"] = 100
-            }
-        }
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-    end,
-
-    ["!items"] = function()
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        SendMessage("📦 Lista de Itens por Raridade:")
-        for rarity, items in pairs(_G.Items) do
-            SendMessage("- " .. rarity:upper() .. ": " .. table.concat(items, ", "))
-        end
-    end,
-
-    ["!entities"] = function()
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        SendMessage("👻 Lista de Entidades por Raridade:")
-        for rarity, entities in pairs(_G.Entities) do
-            SendMessage("- " .. rarity:upper() .. ": " .. table.concat(entities, ", "))
-        end
-    end,
-
-    ["!comandos"] = function()
-        if not _G.Config.commandsEnabled and player.Name ~= _G.Config.hostPlayer then return end
-        SendMessage("📍 Comandos disponíveis:")
-        SendMessage("- Gerais: !pxitem, !vida, !revive, !godmode, !speed, !resetspeed, !item, !shield")
-        SendMessage("- Informações: !items, !entities, !comandos")
-        SendMessage("- Host: !togglemod, !spawn [entidade], !randomentity, !kill [player], !debug, !cmds")
-    end,
-
-    ["!kill"] = function(player, args)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        if _G.Config.voteInProgress then
-            SendMessage("❌ Uma votação já está em andamento!")
-            return
-        end
-        if not args[2] then
-            SendMessage("❌ Use: !kill [nome/displayname/userid do jogador]")
-            return
-        end
-        local targetIdentifier = args[2]
-        local targetPlayer
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr.Name:lower() == targetIdentifier:lower() or 
-               (plr.DisplayName and plr.DisplayName:lower() == targetIdentifier:lower()) or 
-               tostring(plr.UserId) == targetIdentifier then
-                targetPlayer = plr
-                break
+        if prompt.Parent then
+            for _, excludedParent in ipairs(Script.PromptTable.Excluded.Parent) do
+                if prompt.Parent.Name == excludedParent then return true end
             end
         end
-        if not targetPlayer then
-            SendMessage("❌ Jogador não encontrado! Tente usar nome, display name ou ID")
-            return
-        end
-        _G.Config.voteInProgress = true
-        _G.Config.currentVotes = {yes = 0, no = 0}
-        SendMessage("🎯 Votação iniciada para eliminar " .. targetPlayer.DisplayName .. " (@" .. targetPlayer.Name .. ")")
-        SendMessage("Digite Y para eliminar ou N para não eliminar")
-        SendMessage("⏰ Votação termina em 19 segundos")
-        local voteConnection = TextChatService.MessageReceived:Connect(function(voteMsg)
-            if _G.Config.voteInProgress then
-                local vote = voteMsg.Text:lower()
-                if vote == "y" then
-                    _G.Config.currentVotes.yes = _G.Config.currentVotes.yes + 1
-                elseif vote == "n" then
-                    _G.Config.currentVotes.no = _G.Config.currentVotes.no + 1
-                end
-            end
-        end)
-        wait(19)
-        _G.Config.voteInProgress = false
-        voteConnection:Disconnect()
-        if _G.Config.currentVotes.yes > _G.Config.currentVotes.no then
-            local args = {[1] = "KillPlayer", [2] = {["Players"] = {[targetPlayer.Name] = targetPlayer.Name}}}
-            ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(args))
-            SendMessage("☠️ Votação concluída: " .. targetPlayer.DisplayName .. " (@" .. targetPlayer.Name .. ") foi eliminado!")
-        else
-            SendMessage("✨ Votação concluída: " .. targetPlayer.DisplayName .. " (@" .. targetPlayer.Name .. ") foi poupado!")
-        end
-    end,
-
-    ["!spawn"] = function(player, args)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        if not args[2] then
-            SendMessage("❌ Use: !spawn [nome da entidade]")
-            SendMessage("📍 Entidades disponíveis: " .. table.concat(_G.entidadesAleatorias, ", "))
-            return
-        end
-        local entityName = args[2]:lower()
-        local validEntity = false
-        local actualEntityName
-        for _, entity in ipairs(_G.entidadesAleatorias) do
-            if entity:lower() == entityName then
-                validEntity = true
-                actualEntityName = entity
-                break
+        local model = prompt:FindFirstAncestorWhichIsA("Model")
+        if model then
+            for _, excludedModel in ipairs(Script.PromptTable.Excluded.ModelAncestor) do
+                if model.Name == excludedModel then return true end
             end
         end
-        if not validEntity then
-            SendMessage("❌ Entidade não encontrada! Use uma entidade válida da lista.")
-            return
-        end
-        local spawnArgs = {[1] = actualEntityName, [2] = {}}
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(spawnArgs))
-        SendMessage("👻 " .. actualEntityName .. " foi invocado na sala!")
-    end,
-
-    ["!randomentity"] = function(player)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        local randomEntity = _G.entidadesAleatorias[math.random(#_G.entidadesAleatorias)]
-        local spawnArgs = {[1] = randomEntity, [2] = {}}
-        ReplicatedStorage.RemotesFolder.AdminPanelRunCommand:FireServer(unpack(spawnArgs))
-        SendMessage("👻 " .. randomEntity .. " foi invocado aleatoriamente na sala!")
-    end,
-
-    ["!debug"] = function(player)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        _G.Config.debugMode = not _G.Config.debugMode
-        SendMessage("🔧 Modo Debug: " .. (_G.Config.debugMode and "Ativado" or "Desativado"))
-    end,
-
-    ["!togglemod"] = function(player)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        toggleMod(not _G.Config.modEnabled)
-    end,
-
-    ["!cmds"] = function(player)
-        if player.Name ~= _G.Config.hostPlayer then
-            SendMessage("❌ Apenas o host pode usar este comando!")
-            return
-        end
-        _G.Config.commandsEnabled = not _G.Config.commandsEnabled
-        local status = _G.Config.commandsEnabled and "ativados" or "desativados"
-        SendMessage("🔧 Comandos " .. status .. " para jogadores!")
-        saveDebugLog("Commands status changed: " .. status)
+        return false
     end
 }
 
-TextChatService.MessageReceived:Connect(function(message)
-    local text = message.Text:lower()
-    local player = message.TextSource
-    local args = text:split(" ")
-    local command = args[1]
-    if Commands[command] then
-        Commands[command](player, args)
-    end
-end)
+local AutoInteractEnabled = false
+local IgnoreSettings = {
+    ["Jeff Items"] = true,
+    ["Unlock w/ Lockpick"] = false,
+    ["Paintings"] = true,
+    ["Gold"] = false,
+    ["Light Source Items"] = false,
+    ["Skull Prompt"] = false
+}
 
-spawn(function()
-    while wait(1) do
-        if _G.Config.systemActive and _G.Config.loopsAtivos then
-            local tempoAtual = _G.Config.luzAtual == "🟢" and _G.Config.tempoTrocaLuzVerde or _G.Config.tempoTrocaLuzVermelha
-            for i = tempoAtual, 1, -1 do
-                if _G.Config.loopsAtivos then
-                    TimerLabel.Text = string.format("%s Próximo: %ds", _G.Config.luzAtual, i)
-                    if i == 10 then
-                        SendMessage("⚠️ 10 segundos para mudança de luz!")
-                    elseif i == 2 then
-                        SendMessage("⚠️ 2 segundos para mudança de luz!")
-                    end
-                    wait(1)
-                end
-            end
-            if _G.Config.loopsAtivos then
-                alterarLuz(_G.Config.luzAtual == "🟢" and "🔴" or "🟢")
-            end
-        else
-            TimerLabel.Text = "Sistema Pausado"
-            wait(1)
-        end
-    end
-end)
-
-spawn(function()
-    while wait(1) do
-        monitorarSala()
-    end
-end)
-
-spawn(function()
-    while wait(math.random(_G.Config.itemDropInterval.min, _G.Config.itemDropInterval.max)) do
-        if _G.Config.systemActive and _G.Config.loopsAtivos and _G.Config.itensLoopAtivo then
-            darItensAleatorios()
-        end
-    end
-end)
-
-game.Players.PlayerAdded:Connect(function(player)
-    if not _G.Config.hostPlayer then
-        _G.Config.hostPlayer = player.Name
-        SendMessage("👑 " .. player.Name .. " é o host do servidor!")
-    end
-end)
-
-SendMessage("📍 Doors Six - By rhyan57 (Enhanced)")
-SendMessage("📍 Use !comandos para ver todos os comandos disponíveis")
-task.wait(1)
-SendMessage("⚠️ Mod carregado! o host deve passar da porta 2 para ativar o mod.")
-Notificar("Mod Carregado", "Passe da porta 2 para ativa-lo.", 10, Color3.new(1, 1, 0))
-        
-  	end    
+AutomationGroup:AddToggle({
+    Name = "Auto Interact",
+    Default = false,
+    Flag = "AutoInteract-toggle",
+    Callback = function(Value)
+        AutoInteractEnabled = Value
+    end    
 })
+
+AutomationGroup:AddDropdown({
+    Name = "Ignore List",
+    Default = {"Jeff Items"},
+    Options = {"Jeff Items", "Unlock w/ Lockpick", "Paintings", "Gold", "Light Source Items", "Skull Prompt"},
+    Callback = function(Value)
+        for k, _ in pairs(IgnoreSettings) do
+            IgnoreSettings[k] = false
+        end
+        for _, v in pairs(Value) do
+            IgnoreSettings[v] = true
+        end
+    end,
+    Multi = true
+})
+
+AutomationGroup:AddBind({
+    Name = "KeyBind",
+    Default = Enum.KeyCode.R,
+    Hold = false,
+    Callback = function()
+        AutoInteractEnabled = not AutoInteractEnabled
+    end    
+})
+AutomationGroup:AddLabel("")
+
+local function AutoInteractLoop()
+    while true do
+        task.wait()
+        if AutoInteractEnabled then
+            local prompts = Script.Functions.GetAllPromptsWithCondition(function(prompt)
+                if not prompt.Parent then return false end
+                if IgnoreSettings["Jeff Items"] and prompt.Parent:GetAttribute("JeffShop") then return false end
+                if IgnoreSettings["Unlock w/ Lockpick"] and (prompt.Name == "UnlockPrompt" or prompt.Parent:GetAttribute("Locked")) and shared.Character:FindFirstChild("Lockpick") then return false end
+                if IgnoreSettings["Paintings"] and prompt.Name == "PropPrompt" then return false end
+                if IgnoreSettings["Gold"] and prompt.Name == "LootPrompt" then return false end
+                if IgnoreSettings["Light Source Items"] and prompt.Parent:GetAttribute("Tool_LightSource") and not prompt.Parent:GetAttribute("Tool_CanCutVines") then return false end
+                if IgnoreSettings["Skull Prompt"] and prompt.Name == "SkullPrompt" then return false end
+                if prompt.Parent:GetAttribute("PropType") == "Battery" and not (shared.Character:FindFirstChildOfClass("Tool") and (shared.Character:FindFirstChildOfClass("Tool"):GetAttribute("RechargeProp") == "Battery" or shared.Character:FindFirstChildOfClass("Tool"):GetAttribute("StorageProp") == "Battery")) then return false end 
+                if prompt.Parent:GetAttribute("PropType") == "Heal" and shared.Humanoid and shared.Humanoid.Health == shared.Humanoid.MaxHealth then return false end
+                if prompt.Parent.Name == "MinesAnchor" then return false end
+                if Script.IsRetro and prompt.Parent.Parent.Name == "RetroWardrobe" then return false end
+                return Script.PromptTable.Aura[prompt.Name] ~= nil
+            end)
+
+            for _, prompt in pairs(prompts) do
+                task.spawn(function()
+                    if Script.Functions.DistanceFromCharacter(prompt.Parent) < prompt.MaxActivationDistance and (not prompt:GetAttribute("Interactions" .. shared.LocalPlayer.Name) or Script.PromptTable.Aura[prompt.Name] or table.find(Script.PromptTable.AuraObjects, prompt.Parent.Name)) then
+                        if prompt.Parent.Name == "Slot" and prompt.Parent:GetAttribute("Hint") then
+                            if Script.Temp.PaintingDebounce[prompt] then return end
+                            local currentPainting = shared.Character:FindFirstChild("Prop")
+                            local slotPainting = prompt.Parent:FindFirstChild("Prop")
+                            local currentHint = (currentPainting and currentPainting:GetAttribute("Hint"))
+                            local slotHint = (slotPainting and slotPainting:GetAttribute("Hint"))
+                            local promptHint = prompt.Parent:GetAttribute("Hint")
+                            if slotHint ~= promptHint and (currentHint == promptHint or slotPainting) then
+                                Script.Temp.PaintingDebounce[prompt] = true
+                                shared.fireproximityprompt(prompt)
+                                task.wait(0.3)
+                                Script.Temp.PaintingDebounce[prompt] = false    
+                            end
+                            return
+                        end
+                        shared.fireproximityprompt(prompt)
+                    end
+                end)
+            end
+        end
+    end
+end
+InitializeScript()
+task.spawn(AutoInteractLoop)
+
+
+local Script = { IsFools = false }
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Humanoid = Character:WaitForChild("Humanoid")
+local CanJumpEnabled = false
+PlayerGroup:AddToggle({
+    Name = "Enable Jump",
+    Default = false,
+    Flag = "enableJump-toggle",
+    Callback = function(value)
+        CanJumpEnabled = value
+        if Script.IsFools then return end
+        Character:SetAttribute("CanJump", value)
+        if value then
+            
+        else
+           
+            if Humanoid then
+                Humanoid.WalkSpeed = 22
+            end
+        end
+    end
+})
+
+_G.OrionLibLoaded = true
+_G.MsdoorsLoaded = true
