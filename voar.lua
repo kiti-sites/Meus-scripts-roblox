@@ -42,6 +42,17 @@ local function toggleFlight()
     end
 end
 
+-- Movimento no ar (controle de direção enquanto voa)
+game:GetService("RunService").Heartbeat:Connect(function()
+    if isFlying then
+        local rootPart = character:WaitForChild("HumanoidRootPart")
+        local direction = Vector3.new(mouse.Hit.p.X - rootPart.Position.X, 0, mouse.Hit.p.Z - rootPart.Position.Z).Unit
+        
+        -- Atualiza a velocidade de voo com base na direção do mouse
+        bodyVelocity.Velocity = direction * flyingSpeed + Vector3.new(0, flyingSpeed, 0)
+    end
+end)
+
 -- Conectar o botão à função de alternar voo
 flyButton.MouseButton1Click:Connect(toggleFlight)
 
