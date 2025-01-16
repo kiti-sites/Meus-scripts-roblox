@@ -1,4 +1,4 @@
--- Criação de uma mira simples no centro da tela
+-- Criação de uma mira em formato de X no centro da tela
 
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -7,27 +7,28 @@ local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = playerGui
 
--- Criação do Frame para a mira
+-- Criação do Frame para a mira (a base do X)
 local crosshair = Instance.new("Frame")
 crosshair.Size = UDim2.new(0, 30, 0, 30)  -- Tamanho da mira
 crosshair.Position = UDim2.new(0.5, -15, 0.5, -15)  -- Posicionando no centro da tela
 crosshair.AnchorPoint = Vector2.new(0.5, 0.5)  -- Faz a mira centralizada
-crosshair.BackgroundColor3 = Color3.fromRGB(255, 255, 255)  -- Cor da mira (branca)
-
--- Adicionando a mira à tela
+crosshair.BackgroundTransparency = 1  -- Tornando o fundo transparente
 crosshair.Parent = screenGui
 
--- Criando duas linhas para a mira (horizontal e vertical)
-local horizontalLine = Instance.new("Frame")
-horizontalLine.Size = UDim2.new(1, 0, 0, 2)  -- Linha horizontal
-horizontalLine.Position = UDim2.new(0, 0, 0.5, -1)
-horizontalLine.AnchorPoint = Vector2.new(0.5, 0.5)
-horizontalLine.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Cor vermelha para a linha
-horizontalLine.Parent = crosshair
+-- Criando a linha diagonal para o X (da esquerda para a direita)
+local diagonalLine1 = Instance.new("Frame")
+diagonalLine1.Size = UDim2.new(0, 30, 0, 2)  -- Linha diagonal
+diagonalLine1.Position = UDim2.new(0.5, -15, 0.5, -15)  -- Posiciona no centro
+diagonalLine1.AnchorPoint = Vector2.new(0.5, 0.5)
+diagonalLine1.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Cor da linha
+diagonalLine1.Rotation = 45  -- Rotaciona a linha para formar o X
+diagonalLine1.Parent = crosshair
 
-local verticalLine = Instance.new("Frame")
-verticalLine.Size = UDim2.new(0, 2, 1, 0)  -- Linha vertical
-verticalLine.Position = UDim2.new(0.5, -1, 0, 0)
-verticalLine.AnchorPoint = Vector2.new(0.5, 0.5)
-verticalLine.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Cor vermelha para a linha
-verticalLine.Parent = crosshair
+-- Criando a outra linha diagonal para o X (da direita para a esquerda)
+local diagonalLine2 = Instance.new("Frame")
+diagonalLine2.Size = UDim2.new(0, 30, 0, 2)  -- Linha diagonal
+diagonalLine2.Position = UDim2.new(0.5, -15, 0.5, -15)  -- Posiciona no centro
+diagonalLine2.AnchorPoint = Vector2.new(0.5, 0.5)
+diagonalLine2.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Cor da linha
+diagonalLine2.Rotation = -45  -- Rotaciona a linha para formar o X
+diagonalLine2.Parent = crosshair
