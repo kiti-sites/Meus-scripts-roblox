@@ -13,62 +13,37 @@ flyButton.Position = UDim2.new(0, 10, 0, 10)
 flyButton.Text = "Ativar Voo"
 flyButton.Parent = screenGui
 
--- Variáveis para controlar o voo
+-- Variável para controlar o voo
 local isFlying = false
 local flyingSpeed = 50 -- Velocidade do voo
-local verticalSpeed = 20 -- Velocidade para controlar o movimento para cima/baixo
-local bodyGyro -- Para manter o personagem ereto
+local bodyVelocity
 
 -- Função para alternar voo
 local function toggleFlight()
     if isFlying then
         isFlying = false
-        humanoid.PlatformStand = false
-        if bodyGyro then
-            bodyGyro:Destroy()
-            bodyGyro = nil
+        -- Parar o voo removendo o BodyVelocity
+        if bodyVelocity then
+            bodyVelocity:Destroy()
+            bodyVelocity = nil
         end
+        humanoid.PlatformStand = false
         flyButton.Text = "Ativar Voo"
     else
         isFlying = true
         humanoid.PlatformStand = true
         flyButton.Text = "Desativar Voo"
         
-        -- Criar um BodyGyro para manter o personagem ereto
-        bodyGyro = Instance.new("BodyGyro")
-        bodyGyro.MaxTorque = Vector3.new(400000, 400000, 400000) -- Força para manter ereto
-        bodyGyro.CFrame = character:WaitForChild("HumanoidRootPart").CFrame
-        bodyGyro.Parent = character:WaitForChild("HumanoidRootPart")
+        -- Criar o BodyVelocity para o voo
+        bodyVelocity = Instance.new("BodyVelocity")
+        bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+        bodyVelocity.Velocity = Vector3.new(0, flyingSpeed, 0)
+        bodyVelocity.Parent = character:WaitForChild("HumanoidRootPart")
     end
 end
 
--- Controle de voo no ar (usando as teclas WASD)
-game:GetService("RunService").Heartbeat:Connect(function()
-    if isFlying then
-        local rootPart = character:WaitForChild("HumanoidRootPart")
-        local moveDirection = humanoid.MoveDirection
-
-        -- Movimento horizontal com base nas teclas WASD
-        local horizontalVelocity = moveDirection * flyingSpeed
-
-        -- Controle vertical (subir/descer)
-        local verticalVelocity = 0
-        if userInputService:IsKeyDown(Enum.KeyCode.Space) then
-            verticalVelocity = verticalSpeed -- Subir
-        elseif userInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-            verticalVelocity = -verticalSpeed -- Descer
-        end
-
-        -- Atualizar a velocidade do personagem com a física de voo
-        rootPart.Velocity = Vector3.new(horizontalVelocity.X, verticalVelocity, horizontalVelocity.Z)
-    end
-end)
-
 -- Conectar o botão à função de alternar voo
 flyButton.MouseButton1Click:Connect(toggleFlight)
-
--- Garantir que a variável 'userInputService' seja declarada corretamente
-local userInputService = game:GetService("UserInputService")
 
 -- Quando o personagem for respawnado, garantir que o voo ainda funcione
 player.CharacterAdded:Connect(function(newCharacter)
