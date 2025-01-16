@@ -5,7 +5,7 @@ local Tab = Window:MakeTab({
 	PremiumOnly = false
 })
 Tab:AddButton({
-	Name = "Button!",
+	Name = "Batatinha frita",
 	Callback = function()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
